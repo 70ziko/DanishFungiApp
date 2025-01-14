@@ -1,23 +1,35 @@
-from PIL import Image
+import cv2
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
 import os
 
 def preprocess_image(image_path):
-    """Preprocess image for model input"""
+    """Preprocess image for model input using the same transformations as training"""
     try:
-        img = Image.open(image_path)
+        # Read image using OpenCV
+        img = cv2.imread(image_path)
+        if img is None:
+            raise Exception("Failed to read image")
+            
+        # Convert BGR to RGB
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         
-        # Convert to RGB if necessary
-        if img.mode != 'RGB':
-            img = img.convert('RGB')
+        # Define preprocessing pipeline
+        transform = A.Compose([
+            A.Resize(224, 224),
+            A.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            )
+        ])
         
-        # Resize if needed (adjust size based on model requirements)
-        target_size = (224, 224)  # Standard size for many vision models
-        if img.size != target_size:
-            img = img.resize(target_size)
+        # Apply transformations
+        transformed = transform(image=img)
+        processed_img = transformed['image']
         
         # Save preprocessed image
         preprocessed_path = f"{os.path.splitext(image_path)[0]}_preprocessed.jpg"
-        img.save(preprocessed_path, format='JPEG', quality=95)
+        cv2.imwrite(preprocessed_path, cv2.cvtColor(processed_img, cv2.COLOR_RGB2BGR))
         
         return preprocessed_path
         

@@ -1,6 +1,10 @@
 from abc import ABC, abstractmethod
 import torch
-from transformers import AutoModelForImageClassification, AutoFeatureExtractor
+import timm
+import cv2
+import numpy as np
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
 from PIL import Image
 import requests
 import os
@@ -25,24 +29,49 @@ class HFAPIClassifier(BaseClassifier):
 
 class LocalClassifier(BaseClassifier):
     def __init__(self, model_path):
-        self.model = AutoModelForImageClassification.from_pretrained(model_path)
-        self.feature_extractor = AutoFeatureExtractor.from_pretrained(model_path)
+        # Load model using timm
+        self.model = timm.create_model('vit_base_patch16_224', pretrained=False, num_classes=2000)
+        
+        # Load state dict
+        state_dict = torch.load(os.path.join(model_path, 'model.pth'), map_location='cpu')
+        self.model.load_state_dict(state_dict)
+        
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
         self.model.eval()
 
-    def predict(self, image):
-        img = Image.open(image)
-        inputs = self.feature_extractor(img, return_tensors="pt")
-        inputs = {k: v.to(self.device) for k, v in inputs.items()}
+        # Setup preprocessing pipeline
+        self.transform = A.Compose([
+            A.Resize(224, 224),
+            A.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            ),
+            ToTensorV2()
+        ])
+
+    def predict(self, image_path):
+        # Read image using OpenCV
+        image = cv2.imread(image_path)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        
+        # Apply transformations
+        transformed = self.transform(image=image)
+        input_tensor = transformed['image'].unsqueeze(0).to(self.device)
         
         with torch.no_grad():
-            outputs = self.model(**inputs)
-            probs = torch.nn.functional.softmax(outputs.logits, dim=-1)
+            outputs = self.model(input_tensor)
+            probs = torch.nn.functional.softmax(outputs, dim=1)
             
+        # Get prediction
+        pred_idx = probs[0].argmax().item()
+        confidence = probs[0].max().item()
+        
+        # Map index to label (you'll need to provide a mapping file)
+        # For now, return the index
         return {
-            "label": self.model.config.id2label[probs.argmax().item()],
-            "score": probs.max().item()
+            "label": f"class_{pred_idx}",
+            "score": confidence
         }
 
 def get_classifier(config):
