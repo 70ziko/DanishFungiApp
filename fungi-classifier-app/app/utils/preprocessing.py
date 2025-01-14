@@ -1,6 +1,5 @@
 import cv2
 import albumentations as A
-from albumentations.pytorch import ToTensorV2
 import os
 
 def preprocess_image(image_path):

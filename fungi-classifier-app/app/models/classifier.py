@@ -75,11 +75,11 @@ class LocalClassifier(BaseClassifier):
         }
 
 def get_classifier(config):
-    if config.MODEL_TYPE == 'api':
-        if not config.HF_API_TOKEN:
+    if config['MODEL_TYPE'] == 'api':
+        if not config['HF_API_TOKEN']:
             raise ValueError("HF_API_TOKEN is required for API classifier")
-        return HFAPIClassifier(config.HF_MODEL_ID, config.HF_API_TOKEN)
+        return HFAPIClassifier(config['HF_MODEL_ID'], config['HF_API_TOKEN'])
     else:
-        if not os.path.exists(config.MODEL_PATH):
-            raise ValueError(f"Model not found at {config.MODEL_PATH}")
-        return LocalClassifier(config.MODEL_PATH)
+        if not os.path.exists(config['MODEL_PATH']):
+            raise ValueError(f"Model not found at {config['MODEL_PATH']}")
+        return LocalClassifier(config['MODEL_PATH'])

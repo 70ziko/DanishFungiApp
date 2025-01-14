@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, send_from_directory
 from werkzeug.utils import secure_filename
 import os
 from app.utils.validation import allowed_file
@@ -12,6 +12,10 @@ classifier = None
 def initialize_classifier():
     global classifier
     classifier = get_classifier(current_app.config)
+
+@api.route('/')
+def index():
+    return send_from_directory('templates', 'index.html')
 
 @api.route('/predict', methods=['POST'])
 def predict():

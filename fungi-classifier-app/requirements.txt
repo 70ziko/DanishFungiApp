@@ -2,9 +2,10 @@ flask==2.0.1
 pillow==10.4.0
 torch==2.3.1
 timm==1.0.7
-albumentations==1.4.11
+albumentations==2.0.0
 requests==2.26.0
 python-dotenv==0.19.2
 werkzeug==2.0.2
 opencv-python-headless==4.10.0.84
 numpy==1.26.4
+scipy==1.12.0
