@@ -30,13 +30,10 @@ def predict():
     file.save(filepath)
     
     try:
-        # Preprocess image
         preprocessed_path = preprocess_image(filepath)
         
-        # Get prediction
         result = classifier.predict(preprocessed_path)
         
-        # Clean up
         os.remove(filepath)
         os.remove(preprocessed_path)
         
