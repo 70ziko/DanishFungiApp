@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fungi Classifier</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Fungi Classifier</h1>
+        <form id="upload-form" enctype="multipart/form-data">
+            <input type="file" id="image-input" accept=".jpg,.jpeg,.png">
+            <button type="submit">Classify</button>
+        </form>
+        <div id="result" class="hidden">
+            <h2>Result:</h2>
+            <p id="prediction"></p>
+            <p id="confidence"></p>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
