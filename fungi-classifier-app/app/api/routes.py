@@ -33,20 +33,17 @@ def predict():
     
     if not os.path.exists(current_app.config['UPLOAD_FOLDER']):
         os.makedirs(current_app.config['UPLOAD_FOLDER'])
-    
-    print(f"Received request: {file.filename}")
         
     filename = secure_filename(file.filename)
     filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
     file.save(filepath)
     
     try:
-        preprocessed_path = preprocess_image(filepath)
+        preprocessed_tensor = preprocess_image(filepath)
         
-        result = classifier.predict(preprocessed_path)
+        result = classifier.predict(preprocessed_tensor)
         
         os.remove(filepath)
-        os.remove(preprocessed_path)
         
         return jsonify(result)
         
