@@ -30,6 +30,11 @@ def predict():
         
     if not allowed_file(file.filename, current_app.config['ALLOWED_EXTENSIONS']):
         return jsonify({'error': 'File type not allowed'}), 400
+    
+    if not os.path.exists(current_app.config['UPLOAD_FOLDER']):
+        os.makedirs(current_app.config['UPLOAD_FOLDER'])
+    
+    print(f"Received request: {file.filename}")
         
     filename = secure_filename(file.filename)
     filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
